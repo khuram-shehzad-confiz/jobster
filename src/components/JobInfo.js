@@ -1,10 +1,11 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import { FaLocationArrow, FaBriefcase, FaCalendarAlt } from 'react-icons/fa';
+import { FaBriefcase, FaCalendarAlt } from 'react-icons/fa';
+import { IoLocation } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import styled from 'styled-components'
 import moment from "moment";
-import { deleteJob, setEditJob } from "../slice/jobSlice";
+import { deleteJob, enableDeleteModal, setEditJob } from "../slice/jobSlice";
 
 const JobInfo = ({
   _id,
@@ -31,7 +32,7 @@ const JobInfo = ({
       <div className="content">
         <div className="content-center">
           <div className="job-label">
-            <span className="icon">{<FaLocationArrow />} </span>
+            <span className="icon">{<IoLocation />} </span>
             <span className="text">{jobLocation} </span>
           </div>
           <div className="job-label">
@@ -42,9 +43,6 @@ const JobInfo = ({
             <span className="icon">{<FaBriefcase />} </span>
             <span className="text">{jobType} </span>
           </div>
-          {/* <JobInfo icon={<FaLocationArrow />} text={jobLocation} />
-          <JobInfo icon={<FaCalendarAlt />} text={date} />
-          <JobInfo icon={<FaBriefcase />} text={jobType} /> */}
           <div className={`status ${status}`}>{status}</div>
         </div>
         <footer>
@@ -70,7 +68,10 @@ const JobInfo = ({
             <button
               type="button"
               className="btn delete-btn"
-              onClick={() => dispatch(deleteJob(_id))}
+              onClick={() => dispatch(
+                enableDeleteModal(_id)
+                // deleteJob(_id)
+                )}
             >
               delete
             </button>

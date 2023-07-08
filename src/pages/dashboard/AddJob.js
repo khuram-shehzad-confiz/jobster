@@ -2,10 +2,16 @@ import React from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import FormRow from "../../components/FormRow";
-import FormRowSelect from "../../components/FormRowSelect";
-import { clearValues, createJob, editJob, handleChange } from "../../slice/jobSlice";
-const AddJob = () => {
+import {
+  clearValues,
+  createJob,
+  editJob,
+  handleChange,
+} from "../../slice/jobSlice";
+import { Form, Formik } from "formik";
+import Input from "../../components/Input";
+import DropDown from "../../components/DropDown";
+const AddJob = (props) => {
   const {
     isLoading,
     position,
@@ -21,94 +27,144 @@ const AddJob = () => {
   const { user } = useSelector((store) => store.user);
   const dispatch = useDispatch();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (!position || !company || !jobLocation) {
+  const handleSubmit = (e, actions) => {
+    // e.preventDefault();
+    console.log(e);
+    // debugger
+    if (!e.position || !e.company || !e.jobLocation) {
       toast.error("Please Fill Out All Fields");
       return;
     }
     if (isEditing) {
-        dispatch(
-          editJob({
-            jobId: editJobId,
-            job: { position, company, jobLocation, jobType, status },
-          })
-        );
-        return;
-      }
-    dispatch(createJob({ position, company, jobLocation, jobType, status }))
+      dispatch(
+        editJob({
+          jobId: editJobId,
+          job: e,
+        })
+      )
+        .unwrap()
+        .then(() => {
+          console.log("API success");
+          actions.setSubmitting(false);
+          actions.resetForm({
+            values: {
+              position: "",
+              company: "",
+              jobLocation: "",
+              jobType: "full-time",
+              status: "pending",
+            },
+          });
+        })
+        .catch((error) => {
+          console.error("API call failed:", error);
+        });
+      return;
+    } else {
+      dispatch(createJob(e))
+        .unwrap()
+        .then(() => {
+          console.log("API success");
+          actions.setSubmitting(false);
+          actions.resetForm();
+        })
+        .catch((error) => {
+          // Handle API call error if needed
+          console.error("API call failed:", error);
+        });
+    }
+    // resetForm();
   };
   const handleJobInput = (e) => {
     const name = e.target.name;
     const value = e.target.value;
-    dispatch(handleChange({name,value}))
+    dispatch(handleChange({ name, value }));
+  };
+
+  const initialState = {
+    position: position,
+    company: company,
+    jobLocation: jobLocation,
+    status: status,
+    jobType: jobType,
   };
   return (
     <Wrapper>
-      <form className="form">
-        <h3>{isEditing ? "edit job" : "add job"}</h3>
-
-        <div className="form-center">
-          {/* position */}
-          <FormRow
-            type="text"
-            name="position"
-            value={position}
-            handleChange={handleJobInput}
-          />
-          {/* company */}
-          <FormRow
-            type="text"
-            name="company"
-            value={company}
-            handleChange={handleJobInput}
-          />
-          {/* location */}
-          <FormRow
-            type="text"
-            labelText="job location"
-            name="jobLocation"
-            value={jobLocation}
-            handleChange={handleJobInput}
-          />
-          {/* job status */}
-
-          <FormRowSelect
-            name="status"
-            value={status}
-            handleChange={handleJobInput}
-            list={statusOptions}
-          />
-          {/* job type */}
-          <FormRowSelect
-            name="jobType"
-            labelText="job type"
-            value={jobType}
-            handleChange={handleJobInput}
-            list={jobTypeOptions}
-          />
-
-          {/* btn container */}
-          <div className="btn-container">
-            <button
-              type="button"
-              className="btn btn-block clear-btn"
-              onClick={() => dispatch(clearValues())}
-            >
-              clear
-            </button>
-            <button
-              type="submit"
-              className="btn btn-block submit-btn"
-              onClick={handleSubmit}
-              disabled={isLoading}
-            >
-              submit
-            </button>
-          </div>
-        </div>
-      </form>
+      <Formik
+        initialValues={initialState}
+        //  validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ setFieldValue, resetForm }) => (
+          <Form className="form">
+            <h3>{isEditing ? "edit job" : "add job"}</h3>
+            <div className="form-center">
+              {/* position */}
+              <Input
+                type="text"
+                name="position"
+                onChange={(event) => {
+                  handleJobInput(event);
+                  setFieldValue(event.target.name, event.target.value);
+                }}
+              />
+              {/* company */}
+              <Input
+                type="text"
+                name="company"
+                onChange={(event) => {
+                  handleJobInput(event);
+                  setFieldValue(event.target.name, event.target.value);
+                }}
+              />
+              {/* location */}
+              <Input
+                type="text"
+                name="jobLocation"
+                label="job location"
+                onChange={(event) => {
+                  handleJobInput(event);
+                  setFieldValue(event.target.name, event.target.value);
+                }}
+              />
+              <DropDown
+                name="status"
+                options={statusOptions}
+                onChange={(event) => {
+                  handleJobInput(event);
+                  setFieldValue(event.target.name, event.target.value);
+                }}
+              />
+              <DropDown
+                options={jobTypeOptions}
+                name="jobType"
+                labelText="job type"
+                onChange={(event) => {
+                  handleJobInput(event);
+                  setFieldValue(event.target.name, event.target.value);
+                }}
+              />
+              {/* btn container */}
+              <div className="btn-container">
+                <button
+                  type="reset"
+                  className="btn btn-block clear-btn"
+                  onClick={resetForm}
+                >
+                  clear
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-block submit-btn"
+                  disabled={isLoading}
+                >
+                  submit
+                </button>
+              </div>
+            </div>
+          </Form>
+        )}
+      </Formik>
     </Wrapper>
   );
 };

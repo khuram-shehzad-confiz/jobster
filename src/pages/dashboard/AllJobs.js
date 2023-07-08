@@ -1,16 +1,23 @@
-import React from 'react'
-import JobsContainer from '../../components/JobsContainer'
-import SearchContainer from '../../components/SearchContainer'
-import Pagination from '../../components/Pagination'
+import React, { useEffect } from "react";
+import JobsContainer from "../../components/JobsContainer";
+import SearchContainer from "../../components/SearchContainer";
+import Pagination from "../../components/Pagination";
+import Modal from "../../components/Modal";
+import { useSelector } from "react-redux";
 
 const AllJobs = () => {
+  const { isDeleting } = useSelector((store) => store.job);
+
+  //   console.log('isDeleting '+isDeleting)
+
   return (
     <>
-    <SearchContainer/>
-    <JobsContainer/>
-    <Pagination/>
+      {isDeleting && <Modal />}
+      <SearchContainer />
+      <JobsContainer />
+      <Pagination />
     </>
-  )
-}
+  );
+};
 
-export default AllJobs
+export default AllJobs;

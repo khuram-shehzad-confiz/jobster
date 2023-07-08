@@ -1,7 +1,7 @@
 import Landing from "./pages/Landing";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import SharedLayout from "./pages/dashboard/SharedLayout";
 import { Stats } from "./pages/dashboard/Stats";
@@ -9,11 +9,12 @@ import AllJobs from "./pages/dashboard/AllJobs";
 import AddJob from "./pages/dashboard/AddJob";
 import Profile from "./pages/dashboard/Profile";
 import ProtectedRoute from "./pages/ProtectedRoute";
+import Error from "./pages/Error";
 
 
 function App() {
   return (
-    <Router>
+    <BrowserRouter>
        <ToastContainer position="top-center"/>
       <Routes>
       <Route path='/' element={
@@ -28,9 +29,10 @@ function App() {
         </Route>
       <Route path="landing" element={<Landing />} />
       <Route path="register" element={<Register/>}/>
+      <Route path="*" element={<Error/>}/>
       </Routes>
      
-    </Router>
+    </BrowserRouter>
   );
 }
 

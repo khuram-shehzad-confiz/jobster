@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Logo from "../components/Logo";
 import styled from "styled-components";
-import FormRow from "../components/FormRow";
 import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, registerUser } from "../slice/userSlice";
 import { useNavigate } from "react-router-dom";
+import { Form, Formik, useFormikContext, validateYupSchema } from "formik";
+import Input from "../components/Input";
+import * as Yup from "yup";
 
 const initialState = {
   name: "",
@@ -15,19 +17,11 @@ const initialState = {
 };
 
 function Register() {
-  const [values, setValues] = useState(initialState);
   const { user, isLoading } = useSelector((store) => store.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    // console.log(`${name}${value}`)
-    setValues({ ...values, [name]: value });
-  };
-  const onSubmit = (e) => {
-    e.preventDefault();
+  const onSubmit = (values) => {
     // console.log(e.target)
     const { name, email, password, isMember } = values;
     if (!email || !password || (!isMember && !name)) {
@@ -41,24 +35,68 @@ function Register() {
     }
     dispatch(registerUser({ name, email, password }));
   };
-
-  const toggleMember = () => {
-    setValues({ ...values, isMember: !values.isMember });
-  };
   useEffect(() => {
     if (user) {
       setTimeout(() => {
         navigate("/");
-      }, 2000);
+      }, 1000);
     }
   }, [user]);
+
+  const schemaValidation = Yup.object({
+    isMember: Yup.boolean(),
+    name: Yup.string().when("isMember", {
+      is: false,
+      then: () => Yup.string().required("Required"),
+    }),
+    email: Yup.string().required("Required"),
+    password: Yup.string().required("Required"),
+  });
   return (
     <Wrapper className="full-page">
-      <form className="form" onSubmit={onSubmit}>
+      <Formik
+        initialValues={initialState}
+        validationSchema={schemaValidation}
+        onSubmit={onSubmit}
+      >
+       
+        {({ values, setFieldValue }) => (
+ <Form className="form">
+ <Logo />
+ <h3>{values.isMember ? "Login" : "Register"}</h3>
+ {/* name field */}
+ {!values.isMember && (
+   <Input type="text" name="name" />
+ )}
+ {/* email field */}
+ <Input type="email" name="email" />
+
+ <Input type="password" name="password" />
+
+
+ <button type="submit" className="btn btn-block" disabled={isLoading}>
+   {isLoading ? "loading..." : "submit"}
+ </button>
+ <p>
+   {values.isMember ? "Not a member yet?" : "Already a member?"}
+   {/* <button type="button" onClick={toggleMember(values, setFieldValue)} className="member-btn"> */}
+   <button type="button" onClick={()=>{
+    setFieldValue('isMember', !values.isMember)
+   }} className="member-btn">
+
+     {values.isMember ? "Register" : "Login"}
+   </button>
+ </p>
+</Form>
+           )}
+       
+      </Formik>
+
+      {/* <form className="form" onSubmit={onSubmit}>
         <Logo />
         <h3>{values.isMember ? "Login" : "Register"}</h3>
 
-        {/* name field */}
+        
         {!values.isMember && (
           <FormRow
             type="text"
@@ -67,14 +105,14 @@ function Register() {
             handleChange={handleChange}
           />
         )}
-        {/* email field */}
+        
         <FormRow
           type="email"
           name="email"
           value={values.email}
           handleChange={handleChange}
         />
-        {/* password field */}
+        
         <FormRow
           type="password"
           name="password"
@@ -91,7 +129,7 @@ function Register() {
             {values.isMember ? "Register" : "Login"}
           </button>
         </p>
-      </form>
+      </form> */}
     </Wrapper>
   );
 }

@@ -1,67 +1,97 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
-import FormRow from "./FormRow";
-import FormRowSelect from "./FormRowSelect";
 import { clearFilters, handleChange } from "../slice/allJobsSlice";
+import Input from "./Input";
+import { Form, Formik } from "formik";
+import DropDown from "./DropDown";
 
 const SearchContainer = () => {
   const { isLoading, search, searchStatus, searchType, sort, sortOptions } =
     useSelector((store) => store.allJobs);
   const { jobTypeOptions, statusOptions } = useSelector((store) => store.job);
+  //   console.log('from redux: '+initialFiltersState)
   const dispatch = useDispatch();
   const handleSearch = (e) => {
-    console.log(e.target.value);
+    // debugger;
+    // console.log(e.target.name + " " + e.target.value);
     const name = e.target.name;
     const value = e.target.value;
     dispatch(handleChange({ name, value }));
   };
-  const handleSubmit = (e) => {
-    dispatch(clearFilters());
+  
+  const initialFiltersState = {
+    search: search,
+    searchStatus: searchStatus,
+    searchType: searchType,
+    sort: sort,
   };
+
   return (
     <Wrapper>
-      <form className="form">
-        <h4>search form</h4>
-        <div className="form-center">
-          <FormRow
-            type="text"
-            name="search"
-            value={search}
-            handleChange={handleSearch}
-          />
-          {/* search by status */}
-          <FormRowSelect
-            labelText="status"
-            name="searchStatus"
-            value={searchStatus}
-            handleChange={handleSearch}
-            list={["all", ...statusOptions]}
-          />
-          {/* search by type */}
-          <FormRowSelect
-            labelText="type"
-            name="searchType"
-            value={searchType}
-            handleChange={handleSearch}
-            list={["all", ...jobTypeOptions]}
-          />
-          {/* sort */}
-          <FormRowSelect
-            name="sort"
-            value={sort}
-            handleChange={handleSearch}
-            list={sortOptions}
-          />
-          <button
-            className="btn btn-block btn-danger"
-            disabled={isLoading}
-            onClick={handleSubmit}
-          >
-            clear filters
-          </button>
-        </div>
-      </form>
+      <Formik
+        initialValues={initialFiltersState}
+        onSubmit={(initialFiltersState, actions) => {
+          dispatch(clearFilters());
+          actions.resetForm({
+            initialFiltersState,
+          });
+        }}
+      >
+        {({ setFieldValue }) => (
+          <Form className="form">
+            <h4>search form Formik</h4>
+            <div className="form-center">
+              <Input
+                type="text"
+                name="search"
+                onChange={(event) => {
+                  handleSearch(event);
+                  setFieldValue(event.target.name, event.target.value);
+                }}
+              />
+               {/* search by status */}
+              <DropDown
+                name="searchStatus"
+                labelText="status"
+                options={["all", ...statusOptions]}
+                onChange={(event) => {
+                  handleSearch(event);
+                  setFieldValue(event.target.name, event.target.value);
+                }}
+              />
+              {/* search by type */}
+              <DropDown
+                name="searchType"
+                labelText="type"
+                options={["all", ...jobTypeOptions]}
+                onChange={(event) => {
+                  handleSearch(event);
+                  setFieldValue(event.target.name, event.target.value);
+                }}
+              />
+               {/* sort */}
+              <DropDown
+                name="sort"
+                options={sortOptions}
+                onChange={(event) => {
+                  handleSearch(event);
+                  setFieldValue(event.target.name, event.target.value);
+                }}
+              />
+
+              <button
+                type="submit"
+                className="btn btn-block btn-danger"
+                disabled={isLoading}
+              >
+                clear filters
+              </button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+
     </Wrapper>
   );
 };

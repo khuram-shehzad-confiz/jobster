@@ -1,75 +1,63 @@
-import { useState } from 'react';
-
-import styled from 'styled-components'
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-toastify';
-import FormRow from '../../components/FormRow';
-import { updateUser } from '../../slice/userSlice';
+import React from "react";
+import styled from "styled-components";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { updateUser } from "../../slice/userSlice";
+import { Form, Formik } from "formik";
+import * as Yup from "yup";
+import Input from "../../components/Input";
 
 const Profile = () => {
-    const { isLoading, user } = useSelector((store) => store.user);
+  const { isLoading, user } = useSelector((store) => store.user);
   const dispatch = useDispatch();
-  const [userData, setUserData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    lastName: user?.lastName || '',
-    location: user?.location || '',
-  });
-
   const handleSubmit = (e) => {
-    e.preventDefault();
-    const { name, email, lastName, location } = userData;
-    if (!name || !email || !lastName || !location) {
-      toast.error('please fill out all fields');
-      return;
-    }
-    dispatch(updateUser(userData));
+    // e.preventDefault();
+    console.log(e);
+    // debugger
+    dispatch(updateUser(e));
   };
 
-  const handleChange = (e) => {
-    const name = e.target.name;
-    const value = e.target.value;
-    setUserData({ ...userData, [name]: value });
+  const initialState = {
+    name: user?.name || "",
+    email: user?.email || "",
+    lastName: user?.lastName || "",
+    location: user?.location || "",
+
   };
 
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Required"),
+    email: Yup.string().required("Required"),
+    lastName: Yup.string().required("Required!"),
+    location: Yup.string().required("Required!"),
+  });
   return (
-     <Wrapper>
-      <form className='form' onSubmit={handleSubmit}>
-        <h3>profile</h3>
-        <div className='form-center'>
-          <FormRow
-            type='text'
-            name='name'
-            value={userData.name}
-            handleChange={handleChange}
-          />
-          <FormRow
-            type='text'
-            labelText='last name'
-            name='lastName'
-            value={userData.lastName}
-            handleChange={handleChange}
-          />
-          <FormRow
-            type='email'
-            name='email'
-            value={userData.email}
-            handleChange={handleChange}
-          />
-          <FormRow
-            type='text'
-            name='location'
-            value={userData.location}
-            handleChange={handleChange}
-          />
-          <button type='submit' className='btn btn-block' disabled={isLoading}>
-            {isLoading ? 'Please Wait...' : 'save changes'}
-          </button>
-        </div>
-      </form>
+    <Wrapper>
+      <Formik
+        initialValues={initialState}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+      >
+        <Form className="form">
+          <div className="form-center">
+            <Input type="text" name="name" />
+            <Input type="text" name="lastName" />
+            <Input type="email" name="email" />
+            <Input type="text" name="location" />
+
+            <button
+              type="submit"
+              className="btn btn-block"
+              disabled={isLoading}
+            >
+              {isLoading ? "Please Wait..." : "save changes"}
+            </button>
+          </div>
+        </Form>
+      </Formik>
     </Wrapper>
-  )
-}
+  );
+};
 
 const Wrapper = styled.section`
   border-radius: var(--borderRadius);
@@ -134,5 +122,5 @@ const Wrapper = styled.section`
       margin-top: 0;
     }
   }
-`
-export default Profile
+`;
+export default Profile;

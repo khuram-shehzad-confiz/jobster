@@ -25,9 +25,10 @@ export const createJob = createAsyncThunk(
 export const editJob = createAsyncThunk(
   "job/editJob",
   async ({ jobId, job }, thunkAPI) => {
-    console.log("jobId "+jobId)
+    // console.log("jobId " + jobId);
+
     try {
-      const resp = await axios.patch(BASE_URL + "/jobs/"+jobId, job, {
+      const resp = await axios.patch(BASE_URL + "/jobs/" + jobId, job, {
         headers: {
           authorization: `Bearer ${thunkAPI.getState().user.user.token}`,
         },
@@ -43,8 +44,11 @@ export const editJob = createAsyncThunk(
 
 export const deleteJob = createAsyncThunk(
   "job/deleteJob",
-  async (jobId, thunkAPI) => {
+  async (_, thunkAPI) => {
     thunkAPI.dispatch(showLoading());
+    debugger;
+    const jobId = thunkAPI.getState().job.deleteJobId;
+    console.log("jobId" + jobId);
     try {
       console.log("jobId: " + jobId);
       const resp = await axios.delete(BASE_URL + "/jobs/" + jobId, {
@@ -52,6 +56,7 @@ export const deleteJob = createAsyncThunk(
           authorization: `Bearer ${thunkAPI.getState().user.user.token}`,
         },
       });
+      thunkAPI.dispatch(closeDeleteModal());
       thunkAPI.dispatch(getAllJobs());
       return resp.data;
     } catch (error) {
@@ -72,6 +77,8 @@ const initialState = {
   status: "pending",
   isEditing: false,
   editJobId: "",
+  isDeleting: false,
+  deleteJobId: "",
 };
 
 const jobSlice = createSlice({
@@ -84,9 +91,17 @@ const jobSlice = createSlice({
     clearValues: () => {
       return initialState;
     },
-    setEditJob:(state, {payload})=>{
-        return {...state, isEditing:true, ...payload}
-    }
+    setEditJob: (state, { payload }) => {
+      return { ...state, isEditing: true, ...payload };
+    },
+    enableDeleteModal: (state, { payload }) => {
+      state.isDeleting = true;
+      state.deleteJobId = payload;
+    },
+    closeDeleteModal: (state) => {
+      state.isDeleting = false;
+      state.deleteJobId = "";
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -115,5 +130,11 @@ const jobSlice = createSlice({
   },
 });
 
-export const { handleChange, clearValues,setEditJob } = jobSlice.actions;
+export const {
+  handleChange,
+  clearValues,
+  setEditJob,
+  closeDeleteModal,
+  enableDeleteModal,
+} = jobSlice.actions;
 export default jobSlice.reducer;
